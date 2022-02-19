@@ -1,5 +1,6 @@
 module Data.DeQueue.Length where
 
+import Data.List (genericTake)
 import Prelude hiding (splitAt)
 import qualified Prelude as P
 
@@ -14,6 +15,6 @@ splitAt i xs
   | i <= 0 = ([], xs)
   | i > toInteger (maxBound :: Int) =
     let (before, after) = P.splitAt maxBound xs
-        rest = if null after then [] else error "Practically unreachable"
+        rest = if null after then [] else genericTake (i - toInteger (maxBound :: Int)) after
      in (before ++ rest, drop (P.length rest) after)
   | otherwise = P.splitAt (fromInteger i) xs

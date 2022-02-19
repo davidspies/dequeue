@@ -29,7 +29,17 @@ resolver: lts-18.25
 #   - auto-update
 #   - wai
 packages:
-- .
+  - .
+extra-deps:
+  - rest-rewrite-0.2.0@sha256:b75893154b295e2a671278da68e2773c60a27c539a76854c86f9ae83303dea6d,3759
+  - git: https://github.com/ucsd-progsys/liquidhaskell
+    commit: b8dc0c2bdff8e6ea9ec4a9fc2439e89fdcd73b69
+    subdirs:
+      - .
+      - liquid-base
+      - liquid-prelude
+      - liquid-ghc-prim
+      - liquid-fixpoint
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:

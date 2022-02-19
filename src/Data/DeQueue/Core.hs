@@ -9,6 +9,14 @@ import Prelude hiding (length, reverse, splitAt)
 
 data DeQueue a = DeQueue {front :: LenList a, back :: LenList a}
 
+{-@ balanced :: DeQueue a -> Bool @-}
+balanced :: DeQueue a -> Bool
+balanced DeQueue {front, back} =
+  length front <= 2 * length back + 1 && length back <= 2 * length front + 1
+
+{-@ type Balanced a = { q : DeQueue a | length (front q) <= 2 * length (back q) + 1 && length (back q) <= 2 * length (front q) + 1 } @-}
+
+{-@ reverse :: Balanced a -> Balanced a @-}
 reverse :: DeQueue a -> DeQueue a
 reverse DeQueue {front, back} = DeQueue {front = back, back = front}
 

@@ -20,12 +20,16 @@ extra-source-files:
 description: Please see the README on GitHub at <https://github.com/davidspies/dequeue#readme>
 
 dependencies:
-  - base >= 4.7 && < 5
+  - liquid-ghc-prim
+  - liquid-base
+  - liquid-prelude
+  - liquidhaskell
 
 library:
   source-dirs: src
 
 ghc-options:
+  - -fplugin=LiquidHaskell
   - -Wall
 
 tests:

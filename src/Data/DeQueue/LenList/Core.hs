@@ -19,9 +19,13 @@ instance Foldable LenList where
 instance Length LenList where
   length (LenList n _) = n
 
+{-@ type CorrectLenList a = {xs : LenList a | length xs == length (toList xs)} @-}
+
 instance Semigroup (LenList a) where
+  {-@ (<>) :: CorrectLenList a -> CorrectLenList a -> CorrectLenList a @-} 
   LenList nx x <> LenList ny y = LenList (nx + ny) (x <> y)
 
+{-@ uncons :: CorrectLenList a -> Maybe (a, CorrectLenList a) @-}
 uncons :: LenList a -> Maybe (a, LenList a)
 uncons (LenList n xs) = case xs of
   [] -> Nothing

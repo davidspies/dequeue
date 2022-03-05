@@ -4,9 +4,9 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 import Data.DeQueue
-import Data.Foldable (toList)
 import qualified Data.Foldable as F
 import Data.Proxy (Proxy (..))
+import GHC.Exts (fromList, toList)
 import GHC.Generics (Generic)
 import Test.QuickCheck
 import Prelude hiding (length, reverse)
@@ -18,8 +18,14 @@ import qualified Prelude as P
 data ConstructDeQueue a = ConstructDeQueue [a] [a]
   deriving (Eq, Ord, Show, Generic)
 
+qFromList :: [a] -> DeQueue a
+qFromList = fromList
+
+qToList :: DeQueue a -> [a]
+qToList = toList
+
 constructQ :: ConstructDeQueue a -> DeQueue a
-constructQ (ConstructDeQueue xs ys) = fromList xs <> fromList ys
+constructQ (ConstructDeQueue xs ys) = qFromList xs <> qFromList ys
 
 constructL :: ConstructDeQueue a -> [a]
 constructL (ConstructDeQueue xs ys) = xs ++ ys
@@ -38,45 +44,42 @@ instance Arbitrary (Proxy a) where
   arbitrary = return Proxy
 
 prop_mempty_is_empty :: (Eq a, Show a) => Proxy a -> Property
-prop_mempty_is_empty (Proxy :: Proxy a) = toList (mempty :: DeQueue a) === []
+prop_mempty_is_empty (Proxy :: Proxy a) = qToList (mempty :: DeQueue a) === []
 
 prop_appendLikeList :: (Eq a, Show a) => ConstructDeQueue a -> ConstructDeQueue a -> Property
 prop_appendLikeList x y =
-  toList (constructQ x <> constructQ y) === constructL x ++ constructL y
+  qToList (constructQ x <> constructQ y) === constructL x ++ constructL y
 
 prop_consLikeList :: (Eq a, Show a) => a -> ConstructDeQueue a -> Property
-prop_consLikeList x y = toList (cons x (constructQ y)) === x : constructL y
+prop_consLikeList x y = qToList (cons x (constructQ y)) === x : constructL y
 
 prop_snocLikeList :: (Eq a, Show a) => ConstructDeQueue a -> a -> Property
-prop_snocLikeList x y = toList (snoc (constructQ x) y) === constructL x ++ [y]
+prop_snocLikeList x y = qToList (snoc (constructQ x) y) === constructL x ++ [y]
 
 prop_toListReturnsList :: (Eq a, Show a) => ConstructDeQueue a -> Property
-prop_toListReturnsList xs = toList (constructQ xs) === constructL xs
+prop_toListReturnsList xs = qToList (constructQ xs) === constructL xs
 
 prop_correctLength :: (Eq a, Show a) => ConstructDeQueue a -> Property
 prop_correctLength xs = length (constructQ xs) === length (constructL xs)
 
 prop_reverseLikeList :: (Eq a, Show a) => ConstructDeQueue a -> Property
-prop_reverseLikeList xs = toList (reverse (constructQ xs)) === P.reverse (constructL xs)
-
-prop_singletonLikeList :: (Eq a, Show a) => a -> Property
-prop_singletonLikeList x = toList (singleton x) === [x]
+prop_reverseLikeList xs = qToList (reverse (constructQ xs)) === P.reverse (constructL xs)
 
 prop_unconsLikeList :: (Eq a, Show a) => ConstructDeQueue a -> Property
 prop_unconsLikeList xs = case uncons (constructQ xs) of
   Nothing -> constructL xs === []
-  Just (y, ys) -> constructL xs === y : toList ys
+  Just (y, ys) -> constructL xs === y : qToList ys
 
 prop_unsnocLikeList :: (Eq a, Show a) => ConstructDeQueue a -> Property
 prop_unsnocLikeList xs = case unsnoc (constructQ xs) of
   Nothing -> constructL xs === []
-  Just (ys, y) -> constructL xs === toList ys ++ [y]
+  Just (ys, y) -> constructL xs === qToList ys ++ [y]
 
 prop_fromListToListRoundTrip :: (Eq a, Show a) => [a] -> Property
-prop_fromListToListRoundTrip xs = toList (fromList xs) === xs
+prop_fromListToListRoundTrip xs = qToList (qFromList xs) === xs
 
 prop_toListFromListRoundTrip :: (Eq a, Show a) => ConstructDeQueue a -> Property
-prop_toListFromListRoundTrip xs = fromList (toList (constructQ xs)) === constructQ xs
+prop_toListFromListRoundTrip xs = qFromList (qToList (constructQ xs)) === constructQ xs
 
 return []
 

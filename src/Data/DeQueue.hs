@@ -1,31 +1,21 @@
+{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Data.DeQueue
-  ( DeQueue,
-    cons,
-    fromList,
-    length,
-    reverse,
-    singleton,
-    snoc,
-    uncons,
-    unsnoc,
-  )
-where
+module Data.DeQueue (DeQueue, cons, length, reverse, snoc, uncons, unsnoc) where
 
 import Data.DeQueue.Core
 import Data.DeQueue.LenList (LenList)
-import qualified Data.DeQueue.LenList as LL
 import Data.DeQueue.Length (length)
-import Data.Foldable (toList)
 import qualified Data.Foldable
 import Data.Functor ((<&>))
+import GHC.Exts (IsList (..))
 import Prelude hiding (length, reverse)
 
 instance Foldable DeQueue where
   foldMap f = foldMap f . toLenList
   length = fromInteger . length
-  toList = toList . toLenList
+  toList = toList
 
 instance Semigroup (DeQueue a) where
   x <> y
@@ -44,17 +34,16 @@ instance Functor DeQueue where
 instance Traversable DeQueue where
   traverse f = fmap fromLenList . traverse f . toLenList
 
-fromList :: [a] -> DeQueue a
-fromList = fromLenList . LL.fromList
+instance IsList (DeQueue a) where
+  type Item (DeQueue a) = a
+  fromList = fromLenList . fromList
+  toList = toList . toLenList
 
 cons :: a -> DeQueue a -> DeQueue a
-cons x = prepend (LL.singleton x)
-
-singleton :: a -> DeQueue a
-singleton = fromLenList . LL.singleton
+cons x = prepend [x]
 
 snoc :: DeQueue a -> a -> DeQueue a
-snoc xs x = xs <> singleton x
+snoc xs x = xs <> [x]
 
 uncons :: DeQueue a -> Maybe (a, DeQueue a)
 uncons xs = unsnoc (reverse xs) <&> \(ys, y) -> (y, reverse ys)

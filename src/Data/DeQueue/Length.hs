@@ -1,5 +1,6 @@
 module Data.DeQueue.Length where
 
+import qualified Data.List as L
 import Prelude hiding (splitAt)
 import qualified Prelude as P
 
@@ -12,8 +13,10 @@ instance Length [] where
 splitAt :: Integer -> [a] -> ([a], [a])
 splitAt i xs
   | i <= 0 = ([], xs)
-  | i > toInteger (maxBound :: Int) =
-    let (before, after) = P.splitAt maxBound xs
-        rest = if null after then [] else error "Practically unreachable"
-     in (before ++ rest, drop (P.length rest) after)
+  | i > maxInt =
+    let (a, bc) = P.splitAt maxBound xs
+        (b, c) = L.genericSplitAt (i - maxInt) bc
+     in (a ++ b, c)
   | otherwise = P.splitAt (fromInteger i) xs
+  where
+    maxInt = toInteger (maxBound :: Int)
